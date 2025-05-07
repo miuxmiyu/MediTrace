@@ -166,6 +166,39 @@ contract Trace {
         emit MedicationDistributed(_medicationID, msg.sender, block.timestamp);        
     }
 }
-contract ProvideToConsumer {
 
+contract ProvideToConsumer {
+    address public owner;
+
+    struct TransferRecord {
+        address sender;
+        address receiver;
+        uint256 medicationID;
+        uint256 timestamp;
+    }
+
+    mapping(uint256 => TransferRecord[]) public transferHistory;
+
+    event MedicationTransferred(uint256 medicationID, address from, address to, uint256 timestamp);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function transfer(uint256 _medicationID, address _to) public {
+        require(_to != address(0), "Invalid receiver address");
+
+        // Log the transfer event
+        transferHistory[_medicationID].push(
+            TransferRecord({
+                sender: msg.sender,
+                receiver: _to,
+                medicationID: _medicationID,
+                timestamp: block.timestamp
+            })
+        );
+
+        emit MedicationTransferred(_medicationID, msg.sender, _to, block.timestamp);
+    }
 }
+
