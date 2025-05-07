@@ -6,6 +6,7 @@ contract Trace {
     address public owner;
     mapping(address => bool) public rawMaterialProviders;
     mapping(address => bool) public drugManufacturers;
+    mapping(address => bool) public wholesaleDistributors;
     
     // Struct to define the structure of a raw material batch
     struct RawMaterial {
@@ -29,9 +30,19 @@ contract Trace {
         string quality;         // e.g. physical characteristics
     }  
 
+    // Struct to define the structure of medication distribution
+    struct Distribution {
+        address distributor;    // Who sent the medication
+        uint256 medicationID;   // Which medication batch was sent
+        uint256 timestamp;      // When it was sent
+    }
+
     // Mappings to store raw material and medication info based on IDs
     mapping (uint256 => RawMaterial) public rawMaterialBatches;
     mapping (uint256 => Medication) public medicationBatches;
+
+    // Mapping to track where each medication batch has been distributed
+    mapping (uint256 => Distribution[]) public distributions;
     
     // Counters to keep track of the total number of raw material and medication batches
     uint256 public rawBatchCount;
@@ -44,6 +55,9 @@ contract Trace {
     // Event triggered when a new raw material batch is created
     event MedicationCreated(uint256 medicationID, string medicationName, address producer, string origin,
         uint256 timestamp, uint256[] rawBatchIDs, string strength, string quality);
+
+   // Event triggered emitted when a medication is distributed
+    event MedicationDistributed(uint256 medicationID, address distributor, uint256 timestamp);
 
     // Contract constructor, executed once during deployment
     constructor() {
@@ -137,11 +151,21 @@ contract Trace {
     }
 
     // Distribution of the medication to pharmacies and hospitals
-    function distribute(uint256 _medicationID) public view {
-        
+    function distribute(uint256 _medicationID) public onlyDrugManufacturers {
+        // Make sure the medication batch exists
+        require(medicationBatches[_medicationID].producer != address(0), "Invalid medication ID");
+
+        // Save distribution info
+        distributions[_medicationID].push(Distribution({
+            distributor: msg.sender,
+            medicationID: _medicationID,
+            timestamp: block.timestamp
+        }));
+
+        // Emit event to log this action
+        emit MedicationDistributed(_medicationID, msg.sender, block.timestamp);        
     }
 }
-
 contract ProvideToConsumer {
 
 }
