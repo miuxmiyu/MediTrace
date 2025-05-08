@@ -65,21 +65,24 @@ contract Trace {
         owner = msg.sender;
     }
 
-    // Modifier to restrict access to only the contract owner
+    // Modifiers to restrict access
     modifier onlyOwner() {
         require(msg.sender == owner, "Only the owner can execute this");
         _;
     }
 
-    // Modifier to restrict access to only raw material providers
     modifier onlyRawMaterials() {
         require(rawMaterialProviders[msg.sender], "Only raw material providers can execute this");
         _;
     }
 
-    // Modifier to restrict access to only drug manufacturers
     modifier onlyDrugManufacturers() {
         require(drugManufacturers[msg.sender], "Only drug manufacturers can execute this");
+        _;
+    }
+
+    modifier onlyDistributors() {
+        require(wholesaleDistributors[msg.sender], "Only wholesale distributors can execute this");
         _;
     }
 
@@ -90,6 +93,10 @@ contract Trace {
 
     function addDrugManufacturer(address _address) public onlyOwner {
         drugManufacturers[_address] = true;
+    }
+
+    function addDistributor(address _address) public onlyOwner {
+        wholesaleDistributors[_address] = true;
     }
 
     // Function to assign an ID to a new batch of raw materials
@@ -151,7 +158,7 @@ contract Trace {
     }
 
     // Distribution of the medication to pharmacies and hospitals
-    function distribute(uint256 _medicationID) public onlyDrugManufacturers {
+    function distribute(uint256 _medicationID) public onlyDistributors {
         // Make sure the medication batch exists
         require(medicationBatches[_medicationID].producer != address(0), "Invalid medication ID");
 
@@ -201,4 +208,3 @@ contract ProvideToConsumer {
         emit MedicationTransferred(_medicationID, msg.sender, _to, block.timestamp);
     }
 }
-
