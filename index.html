@@ -1,35 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MediTrace</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        div {
-            width: 30%;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-        }
-        button {
-            width: 100%;
-            margin: 10px 0px 5px 0px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediTrace</title>
+  <style>
+ body {
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 40px;
+}
+
+.container {
+    background-color: #fff;
+    width: 60%;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: #444;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-right: 10px;
+    min-width: 220px;
+    text-align: right;
+}
+
+.form-group input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-right: 10px;
+    width: 300px;
+}
+
+.form-group button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #4CAF50; /* green */
+}
+
+.form-group button:hover {
+  background-color: #45a049; /* darker green on hover */
+}
+
+  </style>
 </head>
 <body>
     <div>
         <h1>Welcome to MediTrace!</h1>
 
-        <h3>Here you can add a raw material provider:</h3>
-        <label for="rawMatAddr">Input their address:</label>
-        <input type="text" id="rawMatAddr" />
-        <button onclick="addRawMatProvider()">Add Raw Material Provider</button>
+        <h2>Add Users</h2>
+
+        <div class="form-group">
+            <label for="rawMatAddr">Add Raw Material Provider Address:</label>
+            <input type="text" id="rawMatAddr" placeholder="0x..." />
+            <button onclick="addUser('raw')">Add</button>
+        </div>
+
+        <div class="form-group">
+            <label for="drugManAddr">Add Drug Manufacturer Address:</label>
+            <input type="text" id="drugManAddr" placeholder="0x..." />
+            <button onclick="addUser('drug')">Add</button>
+        </div>
+
+        <div class="form-group">
+            <label for="distAddr">Add Wholesale Distributor Address:</label>
+            <input type="text" id="distAddr" placeholder="0x..." />
+            <button onclick="addUser('dist')">Add</button>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
@@ -41,127 +108,114 @@
 
         const contractAddress = "0x8b07150C48ccAb1C37411795Ded8ab7763e61620";
         const contractABI = [
-  {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "medicationID",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "MedicationTransferred",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_medicationID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transfer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "transferHistory",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "receiver",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "medicationID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "addRawMatProvider",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "medicationID",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "MedicationTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_medicationID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "transfer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "transferHistory",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "medicationID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
 ];
-
+        // Initialises Web3 connection and loads the contract
         async function init() {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
@@ -178,28 +232,46 @@
                 alert('Please install MetaMask to use this app.');
             }
         }
-
-        async function addRawMatProvider() {
-            const providerAddr = document.getElementById('rawMatAddr').value;
-            if (!providerAddr) {
-                alert("Please enter a provider address.");
-                return;
+        
+        /**
+        *Adds a user based on their role: 'raw', 'drug', or 'dist'
+        * Each role corresponds to a different smart contract function
+         */
+        async function addUser(type) {
+            let addressInput;
+            let method;
+        
+            if (type === 'raw') {
+                addressInput = document.getElementById('rawMatAddr').value;
+                method = mediTraceContract.methods.addRawMatProvider;
+            } else if (type === 'drug') {
+                addressInput = document.getElementById('drugManAddr').value;
+                method = mediTraceContract.methods.addDrugManufacturer;
+            } else if (type === 'dist') {
+                addressInput = document.getElementById('distAddr').value;
+                method = mediTraceContract.methods.addDistributor;
             }
 
+            // Input Validation
+            if (!addressInput || !web3.utils.isAddress(addressInput)) {
+                alert("Please enter a valid Ethereum address.");
+                return;
+            }
+        
             try {
-                await mediTraceContract.methods.addRawMatProvider(providerAddr).send({ from: defaultAccount })
+                await method(addressInput).send({ from: defaultAccount })
                     .on('transactionHash', hash => {
                         console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
                     })
                     .on('confirmation', (confirmationNumber, receipt) => {
                         console.log("Confirmation:", confirmationNumber);
                         console.log("Receipt:", receipt);
+                        alert("User added successfully!");
                     });
-
-                alert("Raw material provider added successfully.");
             } catch (err) {
-                console.error("Error adding provider:", err);
-                alert("Failed to add provider. See console for details.");
+                console.error("Error adding user:", err);
+                alert("Failed to add user. See console for details.");
             }
         }
 
