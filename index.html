@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediTrace</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        div {
+            width: 30%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        button {
+            width: 100%;
+            margin: 10px 0px 5px 0px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Welcome to MediTrace!</h1>
+
+        <h3>Here you can add a raw material provider:</h3>
+        <label for="rawMatAddr">Input their address:</label>
+        <input type="text" id="rawMatAddr" />
+        <button onclick="addRawMatProvider()">Add Raw Material Provider</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+
+    <script>
+        let web3;
+        let mediTraceContract;
+        let defaultAccount;
+
+        const contractAddress = "0x8b07150C48ccAb1C37411795Ded8ab7763e61620";
+        const contractABI = [
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "medicationID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "MedicationTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_medicationID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferHistory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "medicationID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "addRawMatProvider",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
+        async function init() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    defaultAccount = accounts[0];
+                    web3.eth.defaultAccount = defaultAccount;
+
+                    mediTraceContract = new web3.eth.Contract(contractABI, contractAddress);
+                } catch (error) {
+                    console.error("Error accessing MetaMask accounts:", error);
+                }
+            } else {
+                alert('Please install MetaMask to use this app.');
+            }
+        }
+
+        async function addRawMatProvider() {
+            const providerAddr = document.getElementById('rawMatAddr').value;
+            if (!providerAddr) {
+                alert("Please enter a provider address.");
+                return;
+            }
+
+            try {
+                await mediTraceContract.methods.addRawMatProvider(providerAddr).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+
+                alert("Raw material provider added successfully.");
+            } catch (err) {
+                console.error("Error adding provider:", err);
+                alert("Failed to add provider. See console for details.");
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
