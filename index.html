@@ -25,12 +25,12 @@
 
 h1 {
     font-size: 2.5rem;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 h2 {
     font-size: 1.5rem;
-    margin-top: 30;
+    margin-top: 40px;
     margin-bottom: 20px;
     color: #444;
 }
@@ -128,6 +128,14 @@ h2 {
 		<div class="form-group">
 			<button onclick="assignMedID()">Assign</button>
 		</div>
+
+		<h2>Distribute Medications</h2>
+
+		<div class="form-group">
+            <label for="distributedMedID">Medication ID:</label>
+            <input type="text" id="distributedMedID" placeholder="ID number..." />
+            <button onclick="distribute()">Distribute</button>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
@@ -642,7 +650,7 @@ h2 {
         /**
         * Adds a user based on their role: 'raw', 'drug', or 'dist'
         * Each role corresponds to a different smart contract function
-         */
+        */
         async function addUser(type) {
             let addressInput;
             let method;
@@ -684,7 +692,7 @@ h2 {
 
 		/**
         * Assigns a medication ID to a batch of medicine
-         */
+        */
         async function assignMedID() {
             let medNameInput = document.getElementById('medName').value;
             let originInput = document.getElementById('origin').value;
@@ -724,6 +732,37 @@ h2 {
             } catch (err) {
                 console.error("Error assigning ID:", err);
                 alert("Failed to assign medication ID. See console for details.");
+            }
+        }
+
+		/**
+        * Distributes a medication by ID
+        */
+        async function distribute() {
+            let medIDInput = document.getElementById('distributedMedID').value;
+			medIDInput = parseInt(medIDInput);
+
+            // Input Validation
+            if (!medIDInput) {
+                alert("Please enter a valid medication ID to distribute.");
+                return;
+            }
+        
+            try {
+                await mediTraceContract.methods.distribute(medIDInput).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+
+				alert("Medication distributed successfully!");
+            } catch (err) {
+                console.error("Error distributing medication:", err);
+                alert("Failed to distribute medication by ID. See console for details.");
             }
         }
 
