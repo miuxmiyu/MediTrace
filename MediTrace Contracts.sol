@@ -170,7 +170,26 @@ contract Trace {
         }));
 
         // Emit event to log this action
-        emit MedicationDistributed(_medicationID, msg.sender, block.timestamp);        
+        emit MedicationDistributed(_medicationID, msg.sender, block.timestamp);
+    }
+
+    // Function to get details of a specific medication's distributions based on its ID
+    function getDistributions(uint256 _medicationID) public view returns (address[] memory, uint256[] memory) {
+        // Check if the provided medication ID is valid
+        require(_medicationID > 0 && _medicationID <= medicationCount, "Invalid medication ID");
+        
+        // Retrieve and return the details of the specified medication's distributions
+        Distribution[] storage medDistributions = distributions[_medicationID];
+
+        address[] memory distributorAddresses = new address[](medDistributions.length);
+        uint256[] memory distributedTimestamps = new uint256[](medDistributions.length);
+
+        for (uint i = 0; i < medDistributions.length; i++) {
+            distributorAddresses[i] = medDistributions[i].distributor;
+            distributedTimestamps[i] = medDistributions[i].timestamp;
+        }
+
+        return (distributorAddresses, distributedTimestamps);
     }
 }
 
