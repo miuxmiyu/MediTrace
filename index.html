@@ -136,6 +136,17 @@ h2 {
             <input type="text" id="distributedMedID" placeholder="ID number..." />
             <button onclick="distribute()">Distribute</button>
         </div>
+
+		<h2>Get Information</h2>
+
+		<div class="form-group">
+			<label for="distributionsMedID">View a Medication's Distributions:</label>
+            <input type="text" id="distributionsMedID" placeholder="Medication ID..." />
+            <button onclick="getDistributions()">View</button>
+        </div>
+
+		<div id="distributionsInfo"></div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
@@ -145,7 +156,7 @@ h2 {
         let mediTraceContract;
         let defaultAccount;
 
-        const contractAddress = "0xb10a761Cc8b0C4dcf7A36c3a5C90990d1C6A9C0B";
+        const contractAddress = "0xF76dEB5c4E325D34B081500Fff3482be754A617B";
         const contractABI = [
 	{
 		"inputs": [],
@@ -462,6 +473,30 @@ h2 {
 		"inputs": [
 			{
 				"internalType": "uint256",
+				"name": "_medicationID",
+				"type": "uint256"
+			}
+		],
+		"name": "getDistributions",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
@@ -629,7 +664,8 @@ h2 {
 		"type": "function"
 	}
 ];
-        // Initialises Web3 connection and loads the contract
+        
+		// Initialises Web3 connection and loads the contract
         async function init() {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
@@ -708,7 +744,7 @@ h2 {
 
 			let rawBatchesArray = rawBatchesInput.split(", ");
 			// Convert raw batch IDs to integers
-			for (let i=0; i<rawBatchesArray.length; i++) {
+			for (let i = 0; i < rawBatchesArray.length; i++) {
 				let rawBatch = parseInt(rawBatchesArray[i]);
 				if (!rawBatch) {
 					alert("Please enter raw batch IDs in a valid format.");
@@ -764,6 +800,27 @@ h2 {
                 console.error("Error distributing medication:", err);
                 alert("Failed to distribute medication by ID. See console for details.");
             }
+        }
+
+		/**
+		* Gets a medication's distribution information
+		*/
+		async function getDistributions() {
+            const medID = document.getElementById('distributionsMedID').value;
+            const result = await mediTraceContract.methods.getDistributions(medID).call();
+
+            const distrAddresses = result[0];
+            const distrTimestamps = result[1];
+
+            const distrInfoDiv = document.getElementById('distributionsInfo');
+			distrInfoDiv.innerHTML = '';
+
+			for (let i = 0; i < distrAddresses.length; i++) {
+				distributor = distrAddresses[i];
+				timestamp = distrTimestamps[i];
+				distrInfoDiv.innerHTML = distrInfoDiv.innerHTML +
+					`<p><strong>Distributed by:</strong> ${distributor}, at <strong>Timestamp:</strong> ${new Date(timestamp * 1000)}.</p>`;
+			}
         }
 
         window.addEventListener('load', init);
