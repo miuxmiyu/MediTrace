@@ -30,8 +30,8 @@ h1 {
 
 h2 {
     font-size: 1.5rem;
-    margin-top: 0;
-    margin-bottom: 30px;
+    margin-top: 30;
+    margin-bottom: 20px;
     color: #444;
 }
 
@@ -97,6 +97,37 @@ h2 {
             <input type="text" id="distAddr" placeholder="0x..." />
             <button onclick="addUser('dist')">Add</button>
         </div>
+
+		<h2>Assign a Medication ID</h2>
+
+		<div class="form-group">
+            <label for="medName">Medication Name:</label>
+            <input type="text" id="medName" placeholder="Name..." />
+        </div>
+
+		<div class="form-group">
+			<label for="origin">Medication Origin:</label>
+            <input type="text" id="origin" placeholder="Origin..." />
+		</div>
+
+		<div class="form-group">
+            <label for="rawBatchIDs">Raw Batch IDs Used:</label>
+            <input type="text" id="rawBatchIDs" placeholder="Separated by commas e.g. 1, 2, ..." />
+        </div>
+
+		<div class="form-group">
+            <label for="strength">Medication Strength:</label>
+            <input type="text" id="strength" placeholder="Strength..." />
+        </div>
+
+		<div class="form-group">
+            <label for="quality">Medication Quality:</label>
+            <input type="text" id="quality" placeholder="Quality..." />
+        </div>
+
+		<div class="form-group">
+			<button onclick="assignMedID()">Assign</button>
+		</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
@@ -106,7 +137,7 @@ h2 {
         let mediTraceContract;
         let defaultAccount;
 
-        const contractAddress = "0x8b07150C48ccAb1C37411795Ded8ab7763e61620";
+        const contractAddress = "0xb10a761Cc8b0C4dcf7A36c3a5C90990d1C6A9C0B";
         const contractABI = [
 	{
 		"inputs": [],
@@ -124,14 +155,63 @@ h2 {
 			},
 			{
 				"indexed": false,
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
+				"internalType": "string",
+				"name": "medicationName",
+				"type": "string"
 			},
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "to",
+				"name": "producer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256[]",
+				"name": "rawBatchIDs",
+				"type": "uint256[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "strength",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			}
+		],
+		"name": "MedicationCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "medicationID",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "distributor",
 				"type": "address"
 			},
 			{
@@ -141,8 +221,168 @@ h2 {
 				"type": "uint256"
 			}
 		],
-		"name": "MedicationTransferred",
+		"name": "MedicationDistributed",
 		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "rawBatchID",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "materialName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "producer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "purity",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "strength",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			}
+		],
+		"name": "RawMaterialBatchCreated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "addDistributor",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "addDrugManufacturer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "addRawMatProvider",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_medicationName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_origin",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "_rawBatchIDs",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "string",
+				"name": "_strength",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_quality",
+				"type": "string"
+			}
+		],
+		"name": "assignMed",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_materialName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_origin",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_purity",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_strength",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_quality",
+				"type": "string"
+			}
+		],
+		"name": "assignRawBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [
@@ -150,16 +390,121 @@ h2 {
 				"internalType": "uint256",
 				"name": "_medicationID",
 				"type": "uint256"
+			}
+		],
+		"name": "distribute",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			},
 			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "distributions",
+		"outputs": [
+			{
 				"internalType": "address",
-				"name": "_to",
+				"name": "distributor",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "medicationID",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
 				"type": "address"
 			}
 		],
-		"name": "transfer",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"name": "drugManufacturers",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "medicationBatches",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "medicationName",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "producer",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "strength",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "medicationCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -176,39 +521,100 @@ h2 {
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
+		"inputs": [],
+		"name": "rawBatchCount",
+		"outputs": [
 			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "transferHistory",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			},
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "medicationID",
+				"name": "",
 				"type": "uint256"
+			}
+		],
+		"name": "rawMaterialBatches",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "materialName",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "producer",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
 			},
 			{
 				"internalType": "uint256",
 				"name": "timestamp",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "purity",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "strength",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "rawMaterialProviders",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "wholesaleDistributors",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -234,7 +640,7 @@ h2 {
         }
         
         /**
-        *Adds a user based on their role: 'raw', 'drug', or 'dist'
+        * Adds a user based on their role: 'raw', 'drug', or 'dist'
         * Each role corresponds to a different smart contract function
          */
         async function addUser(type) {
@@ -267,11 +673,57 @@ h2 {
                     .on('confirmation', (confirmationNumber, receipt) => {
                         console.log("Confirmation:", confirmationNumber);
                         console.log("Receipt:", receipt);
-                        alert("User added successfully!");
                     });
+				
+				alert("User added successfully!");
             } catch (err) {
                 console.error("Error adding user:", err);
                 alert("Failed to add user. See console for details.");
+            }
+        }
+
+		/**
+        * Assigns a medication ID to a batch of medicine
+         */
+        async function assignMedID() {
+            let medNameInput = document.getElementById('medName').value;
+            let originInput = document.getElementById('origin').value;
+			let rawBatchesInput = document.getElementById('rawBatchIDs').value;
+			let strengthInput = document.getElementById('strength').value;
+			let qualityInput = document.getElementById('quality').value;
+
+            // Input Validation
+            if (!medNameInput || !originInput || !rawBatchesInput || !strengthInput || !qualityInput) {
+                alert("Please enter all values.");
+                return;
+            }
+
+			let rawBatchesArray = rawBatchesInput.split(", ");
+			// Convert raw batch IDs to integers
+			for (let i=0; i<rawBatchesArray.length; i++) {
+				let rawBatch = parseInt(rawBatchesArray[i]);
+				if (!rawBatch) {
+					alert("Please enter raw batch IDs in a valid format.");
+					return;
+				}
+				rawBatchesArray[i] = rawBatch;
+			}
+        
+            try {
+                await mediTraceContract.methods.assignMed(medNameInput, originInput, rawBatchesArray, strengthInput, qualityInput).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+
+				alert("Medication ID assigned successfully!");
+            } catch (err) {
+                console.error("Error assigning ID:", err);
+                alert("Failed to assign medication ID. See console for details.");
             }
         }
 
