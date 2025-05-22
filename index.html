@@ -726,7 +726,45 @@ h2 {
             }
         }
 
-		/**
+	/**
+        * Assigns a Raw Batch ID to a batch of medicine
+        */
+
+	async function assingRawBatch(){
+		let name = document.getElementById('materialName').value;
+		let origin = document.getElementById('origin').value;
+		let purity = document.getElementById('purity').value;
+		let strength = document.getElementById('strength').value;
+		let quality = document.getElementById('quality').value
+
+		// Basic Validation
+		if (!name || !origin || !purity || !strength || !quality) {
+			alert("Please enter all values.");
+			return;
+		}
+
+		try {
+			await mediTraceContract.methods
+			.assignRawBatch(name, origin, purity, strength, quality)
+			.send({from: defaultAccount})
+			.on('transactionHash', hash => {
+				console.log("Transaction Hash:", hash);
+				alert("Transaction sent. Waiting for confirmation...");
+			})
+			.on('confirmation', (confirmationNumber, receipt) => {
+				console.log("Confirmed:", confirmationNumber);
+				console.log("Receipt", receipt);
+			});
+
+		alert("Raw batch assigned successfully!");
+		}
+		catch (err) {
+			console.error("Error assigning raw batch:" err);
+			alert("Failed to assign raw batch. See console for details.");
+		}
+	}
+
+	/**
         * Assigns a medication ID to a batch of medicine
         */
         async function assignMedID() {
