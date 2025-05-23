@@ -226,4 +226,49 @@ contract ProvideToConsumer {
 
         emit MedicationTransferred(_medicationID, msg.sender, _to, block.timestamp);
     }
+  // Function to retrieve a raw material batch by its ID
+    function getRawBatch(uint256 _rawBatchID) public view returns (
+        string memory,
+        address,
+        string memory,
+        uint256,
+        string memory,
+        string memory,
+        string memory
+    ) {
+        require(_rawBatchID > 0 && _rawBatchID <= rawBatchCount, "Invalid raw batch ID");
+
+        RawMaterial storage batch = rawMaterialBatches[_rawBatchID];
+        return (
+            batch.materialName,
+            batch.producer,
+            batch.origin,
+            batch.timestamp,
+            batch.purity,
+            batch.strength,
+            batch.quality
+        );
+    }
+
+    // Function to retrieve a medication batch by its ID
+    function getMed(uint256 _medicationID) public view returns (
+        string memory,
+        address,
+        string memory,
+        uint256,
+        string memory,
+        string memory
+    ) {
+        require(_medicationID > 0 && _medicationID <= medicationCount, "Invalid medication ID");
+
+        Medication storage med = medicationBatches[_medicationID];
+        return (
+            med.medicationName,
+            med.producer,
+            med.origin,
+            med.timestamp,
+            med.strength,
+            med.quality
+        );
+    }
 }
