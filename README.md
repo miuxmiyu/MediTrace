@@ -21,13 +21,13 @@ To get a local copy up and running, follow these steps:
 
 ## Prerequisites 
 - [Node.js](https://nodejs.org/en) installed in your machine
-- [Remix IDE](https://remix.ethereum.org/)for smart contract development
+- [Remix IDE](https://remix.ethereum.org/) for smart contract development
 - [MetaMask](https://metamask.io/) browser extension
 
 ## How to Run MediTrace
 1. **Clone** the repository
-'git clone https://github.com/miuxmiyu/MediTrace.git'
-2. Open 'index.html' in your browser
+```git clone https://github.com/miuxmiyu/MediTrace.git```
+2. Open `index.html` in your browser
 3. Connect **MetaMask**
    - Ensure MetaMask is added as an extension
    - Have enough Sepholia to run the application
@@ -38,12 +38,9 @@ To get a local copy up and running, follow these steps:
    - Deploy using **Injected Web3** environment (MetaMask)
    - Copy the deployed contract address
 5. Connect **Front-End** to Deployed Contract
-   - Edit the script in 'index.html' or its associated JS file
+   - Edit the script in `index.html` or its associated JS file
    - Replace the placeholder contract address and ABI with the deployed ones from Remix IDE.
   
 ## Authors
-> Team 14 - IFB452 Blockchain Technology Assessment 3
-@lmraad
-@miuxmiyu
-@brendanlen
+Team 14 - IFB452 Blockchain Technology Assessment 3
 
