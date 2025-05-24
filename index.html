@@ -65,11 +65,11 @@ h2 {
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    background-color: #4CAF50;
+    background-color: #4CAF50; /* green */
 }
 
 .form-group button:hover {
-  background-color: #45a049;
+  background-color: #45a049; /* darker green on hover */
 }
 
   </style>
@@ -78,17 +78,99 @@ h2 {
     <div>
         <h1>Welcome to MediTrace!</h1>
 
-        <!-- Existing UI Sections (Add Users, Assign Medication ID, Distribute, Get Distributions) -->
-
-        <h2>Get Information</h2>
+        <h2>Add Users</h2>
 
         <div class="form-group">
-            <label for="distributionsMedID">View a Medication's Distributions:</label>
-            <input type="text" id="distributionsMedID" placeholder="Medication ID..." />
-            <button onclick="getDistributions()">View</button>
+            <label for="rawMatAddr">Add Raw Material Provider Address:</label>
+            <input type="text" id="rawMatAddr" placeholder="0x..." />
+            <button onclick="addUser('raw')">Add</button>
         </div>
 
         <div class="form-group">
+            <label for="drugManAddr">Add Drug Manufacturer Address:</label>
+            <input type="text" id="drugManAddr" placeholder="0x..." />
+            <button onclick="addUser('drug')">Add</button>
+        </div>
+
+        <div class="form-group">
+            <label for="distAddr">Add Wholesale Distributor Address:</label>
+            <input type="text" id="distAddr" placeholder="0x..." />
+            <button onclick="addUser('dist')">Add</button>
+        </div>
+
+		<h2>Assign a Raw Batch ID</h2>
+
+		<div class="form-group">
+            <label for="rawMaterialName">Raw Material Name:</label>
+            <input type="text" id="rawMaterialName" placeholder="Name..." />
+        </div>
+
+		<div class="form-group">
+			<label for="rawOrigin">Raw Batch Origin:</label>
+            <input type="text" id="rawOrigin" placeholder="Origin..." />
+		</div>
+
+		<div class="form-group">
+            <label for="rawPurity">Raw Batch Purity:</label>
+            <input type="text" id="rawPurity" placeholder="Purity..." />
+        </div>
+
+		<div class="form-group">
+            <label for="rawStrength">Raw Batch Strength:</label>
+            <input type="text" id="rawStrength" placeholder="Strength..." />
+        </div>
+
+		<div class="form-group">
+            <label for="rawQuality">Raw Batch Quality:</label>
+            <input type="text" id="rawQuality" placeholder="Quality..." />
+        </div>
+
+		<div class="form-group">
+			<button onclick="assignRawBatch()">Assign</button>
+		</div>
+
+		<h2>Assign a Medication ID</h2>
+
+		<div class="form-group">
+            <label for="medName">Medication Name:</label>
+            <input type="text" id="medName" placeholder="Name..." />
+        </div>
+
+		<div class="form-group">
+			<label for="origin">Medication Origin:</label>
+            <input type="text" id="origin" placeholder="Origin..." />
+		</div>
+
+		<div class="form-group">
+            <label for="rawBatchIDs">Raw Batch IDs Used:</label>
+            <input type="text" id="rawBatchIDs" placeholder="Separated by commas e.g. 1, 2, ..." />
+        </div>
+
+		<div class="form-group">
+            <label for="strength">Medication Strength:</label>
+            <input type="text" id="strength" placeholder="Strength..." />
+        </div>
+
+		<div class="form-group">
+            <label for="quality">Medication Quality:</label>
+            <input type="text" id="quality" placeholder="Quality..." />
+        </div>
+
+		<div class="form-group">
+			<button onclick="assignMedID()">Assign</button>
+		</div>
+
+		<h2>Distribute Medications</h2>
+
+		<div class="form-group">
+            <label for="distributedMedID">Medication ID:</label>
+            <input type="text" id="distributedMedID" placeholder="ID number..." />
+            <button onclick="distribute()">Distribute</button>
+        </div>
+
+		<h2>Get Information</h2>
+
+		<div class="form-group">
             <label for="getRawBatchID">Get Raw Batch Details:</label>
             <input type="text" id="getRawBatchID" placeholder="Raw Batch ID..." />
             <button onclick="getRawBatch()">Get</button>
@@ -100,9 +182,14 @@ h2 {
             <button onclick="getMed()">Get</button>
         </div>
 
-        <div id="distributionsInfo"></div>
-        <div id="rawBatchInfo"></div>
-        <div id="medicationInfo"></div>
+		<div class="form-group">
+			<label for="distributionsMedID">View a Medication's Distributions:</label>
+            <input type="text" id="distributionsMedID" placeholder="Medication ID..." />
+            <button onclick="getDistributions()">Get</button>
+        </div>
+
+		<div id="infoDiv"></div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
@@ -112,9 +199,10 @@ h2 {
         let mediTraceContract;
         let defaultAccount;
 
-        const contractAddress = "0xF76dEB5c4E325D34B081500Fff3482be754A617B"; // Use your actual contract address
-        const contractABI = [...]; // Your full ABI array goes here (unchanged from your file)
-
+        const contractAddress = "0x68897941B3dbCF4e4B61CDbcc431614FEC9f5450"; // Enter in address
+        const contractABI = [...];  // Enter in ABI
+        
+		// Initialises Web3 connection and loads the contract
         async function init() {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
@@ -131,24 +219,170 @@ h2 {
                 alert('Please install MetaMask to use this app.');
             }
         }
+        
+        /**
+        * Adds a user based on their role: 'raw', 'drug', or 'dist'
+        * Each role corresponds to a different smart contract function
+        */
+        async function addUser(type) {
+            let addressInput;
+            let method;
+        
+            if (type === 'raw') {
+                addressInput = document.getElementById('rawMatAddr').value;
+                method = mediTraceContract.methods.addRawMatProvider;
+            } else if (type === 'drug') {
+                addressInput = document.getElementById('drugManAddr').value;
+                method = mediTraceContract.methods.addDrugManufacturer;
+            } else if (type === 'dist') {
+                addressInput = document.getElementById('distAddr').value;
+                method = mediTraceContract.methods.addDistributor;
+            }
 
-        async function getDistributions() {
-            const medID = document.getElementById('distributionsMedID').value;
-            const result = await mediTraceContract.methods.getDistributions(medID).call();
-            const distrAddresses = result[0];
-            const distrTimestamps = result[1];
-            const distrInfoDiv = document.getElementById('distributionsInfo');
-            distrInfoDiv.innerHTML = '';
-            for (let i = 0; i < distrAddresses.length; i++) {
-                distrInfoDiv.innerHTML += `<p><strong>Distributed by:</strong> ${distrAddresses[i]}, at <strong>Timestamp:</strong> ${new Date(distrTimestamps[i] * 1000)}.</p>`;
+            // Input Validation
+            if (!addressInput || !web3.utils.isAddress(addressInput)) {
+                alert("Please enter a valid Ethereum address.");
+                return;
+            }
+        
+            try {
+                await method(addressInput).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+				
+				alert("User added successfully!");
+            } catch (err) {
+                console.error("Error adding user:", err);
+                alert("Failed to add user. See console for details.");
             }
         }
 
-        async function getRawBatch() {
+		/**
+        * Assigns a Raw Batch ID to a batch of raw materials
+        */
+		async function assignRawBatch(){
+			let name = document.getElementById('rawMaterialName').value;
+			let origin = document.getElementById('rawOrigin').value;
+			let purity = document.getElementById('rawPurity').value;
+			let strength = document.getElementById('rawStrength').value;
+			let quality = document.getElementById('rawQuality').value
+
+			// Basic Validation
+			if (!name || !origin || !purity || !strength || !quality) {
+				alert("Please enter all values.");
+				return;
+			}
+
+			try {
+				await mediTraceContract.methods
+				.assignRawBatch(name, origin, purity, strength, quality)
+				.send({from: defaultAccount})
+				.on('transactionHash', hash => {
+					console.log("Transaction Hash:", hash);
+					alert("Transaction sent. Waiting for confirmation...");
+				})
+				.on('confirmation', (confirmationNumber, receipt) => {
+					console.log("Confirmed:", confirmationNumber);
+					console.log("Receipt", receipt);
+				});
+
+				alert("Raw batch assigned successfully!");
+			} catch (err) {
+				console.error("Error assigning raw batch:", err);
+				alert("Failed to assign raw batch. See console for details.");
+			}
+		}
+
+		/**
+        * Assigns a medication ID to a batch of medicine
+        */
+        async function assignMedID() {
+            let medNameInput = document.getElementById('medName').value;
+            let originInput = document.getElementById('origin').value;
+			let rawBatchesInput = document.getElementById('rawBatchIDs').value;
+			let strengthInput = document.getElementById('strength').value;
+			let qualityInput = document.getElementById('quality').value;
+
+            // Input Validation
+            if (!medNameInput || !originInput || !rawBatchesInput || !strengthInput || !qualityInput) {
+                alert("Please enter all values.");
+                return;
+            }
+
+			let rawBatchesArray = rawBatchesInput.split(", ");
+			// Convert raw batch IDs to integers
+			for (let i = 0; i < rawBatchesArray.length; i++) {
+				let rawBatch = parseInt(rawBatchesArray[i]);
+				if (!rawBatch) {
+					alert("Please enter raw batch IDs in a valid format.");
+					return;
+				}
+				rawBatchesArray[i] = rawBatch;
+			}
+        
+            try {
+                await mediTraceContract.methods.assignMed(medNameInput, originInput, rawBatchesArray, strengthInput, qualityInput).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+
+				alert("Medication ID assigned successfully!");
+            } catch (err) {
+                console.error("Error assigning ID:", err);
+                alert("Failed to assign medication ID. See console for details.");
+            }
+        }
+
+		/**
+        * Distributes a medication by ID
+        */
+        async function distribute() {
+            let medIDInput = document.getElementById('distributedMedID').value;
+			medIDInput = parseInt(medIDInput);
+
+            // Input Validation
+            if (!medIDInput) {
+                alert("Please enter a valid medication ID to distribute.");
+                return;
+            }
+        
+            try {
+                await mediTraceContract.methods.distribute(medIDInput).send({ from: defaultAccount })
+                    .on('transactionHash', hash => {
+                        console.log("Transaction Hash:", hash);
+                        alert("Transaction sent. Waiting for confirmation...");
+                    })
+                    .on('confirmation', (confirmationNumber, receipt) => {
+                        console.log("Confirmation:", confirmationNumber);
+                        console.log("Receipt:", receipt);
+                    });
+
+				alert("Medication distributed successfully!");
+            } catch (err) {
+                console.error("Error distributing medication:", err);
+                alert("Failed to distribute medication by ID. See console for details.");
+            }
+        }
+
+		/**
+		* Gets a raw batch's information from its ID
+		*/
+		async function getRawBatch() {
             const rawBatchID = document.getElementById('getRawBatchID').value;
             try {
                 const result = await mediTraceContract.methods.getRawBatch(rawBatchID).call();
-                document.getElementById("rawBatchInfo").innerHTML = `
+                document.getElementById("infoDiv").innerHTML = `
                     <p><strong>Material Name:</strong> ${result[0]}</p>
                     <p><strong>Producer:</strong> ${result[1]}</p>
                     <p><strong>Origin:</strong> ${result[2]}</p>
@@ -163,11 +397,14 @@ h2 {
             }
         }
 
+		/**
+		* Gets a medication's information from its ID
+		*/
         async function getMed() {
             const medID = document.getElementById('getMedID').value;
             try {
                 const result = await mediTraceContract.methods.getMed(medID).call();
-                document.getElementById("medicationInfo").innerHTML = `
+                document.getElementById("infoDiv").innerHTML = `
                     <p><strong>Medication Name:</strong> ${result[0]}</p>
                     <p><strong>Producer:</strong> ${result[1]}</p>
                     <p><strong>Origin:</strong> ${result[2]}</p>
@@ -179,6 +416,27 @@ h2 {
                 console.error("Error retrieving medication:", err);
                 alert("Failed to retrieve medication.");
             }
+        }
+
+		/**
+		* Gets a medication's distribution information
+		*/
+		async function getDistributions() {
+            const medID = document.getElementById('distributionsMedID').value;
+            const result = await mediTraceContract.methods.getDistributions(medID).call();
+
+            const distrAddresses = result[0];
+            const distrTimestamps = result[1];
+
+            const distrInfoDiv = document.getElementById('infoDiv');
+			distrInfoDiv.innerHTML = '';
+
+			for (let i = 0; i < distrAddresses.length; i++) {
+				distributor = distrAddresses[i];
+				timestamp = distrTimestamps[i];
+				distrInfoDiv.innerHTML = distrInfoDiv.innerHTML +
+					`<p><strong>Distributed by:</strong> ${distributor}, at <strong>Timestamp:</strong> ${new Date(timestamp * 1000)}.</p>`;
+			}
         }
 
         window.addEventListener('load', init);
